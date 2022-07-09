@@ -4,6 +4,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
+typedef union dwTime_u {
+  uint8_t raw[5];
+  uint64_t full;
+  struct {
+    uint32_t low32;
+    uint8_t high8;
+  } __attribute__((packed));
+  struct {
+    uint8_t low8;
+    uint32_t high32;
+  } __attribute__((packed));
+} dwTime_t;
+
 typedef enum {dwSpiSpeedLow, dwSpiSpeedHigh} dwSpiSpeed_t;
 
 typedef struct dwOps_s {
