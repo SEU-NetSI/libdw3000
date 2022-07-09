@@ -1,7 +1,10 @@
 #include <stddef.h>
 
-#include "libdw3000spi.h"
+#include "libdw3000Spi.h"
 #include "libdw3000.h"
+#include "dwTypes.h"
+
+extern dwOps_t dwt_ops;
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: writetospiwithcrc()
@@ -12,8 +15,9 @@
  */
 int writetospiwithcrc(uint16_t headerLength, const uint8_t *headerBuffer, uint16_t bodyLength,
                       const uint8_t *bodyBuffer, uint8_t crc8)
-{
-
+{   
+    // TODO crc implementation
+    dwt_ops.spiWrite(headerBuffer, headerLength, bodyBuffer, bodyLength);
     return 0;
 } // end writetospiwithcrc()
 
@@ -26,24 +30,9 @@ int writetospiwithcrc(uint16_t headerLength, const uint8_t *headerBuffer, uint16
  */
 int writetospi(uint16_t headerLength, const uint8_t *headerBuffer, uint16_t bodyLength, const uint8_t *bodyBuffer)
 {
-    spiWrite(headerBuffer, headerLength, bodyBuffer, bodyLength);
+    dwt_ops.spiWrite(headerBuffer, headerLength, bodyBuffer, bodyLength);
     return 0;
 } // end writetospi()
-
-/*! ------------------------------------------------------------------------------------------------------------------
- * @fn spi_cs_low_delay()
- *
- * @brief This function sets the CS to '0' for ms delay and than raises it up
- *
- * input parameters:
- * @param ms_delay - The delay for CS to be in '0' state
- *
- * no return value
- */
-uint16_t spi_cs_low_delay(uint16_t delay_ms)
-{
-    return 0;
-}
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: readfromspi()
@@ -55,6 +44,6 @@ uint16_t spi_cs_low_delay(uint16_t delay_ms)
  */
 int readfromspi(uint16_t headerLength, uint8_t *headerBuffer, uint16_t readlength, uint8_t *readBuffer)
 {
-    spiRead(headerBuffer, headerLength, readBuffer, readlength);
+    dwt_ops.spiRead(headerBuffer, headerLength, readBuffer, readlength);
     return 0;
 } // end readfromspi()

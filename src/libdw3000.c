@@ -4,7 +4,7 @@
 
 #include "dw3000.h"
 #include "libdw3000.h"
-
+#include "dwTypes.h"
 // -------------------------------------------------------------------------------------------------------------------
 // Module Macro definitions and enumerations
 //
@@ -29,6 +29,7 @@ const uint16_t sts_length_factors[STS_LEN_SUPPORTED]=
 
 static uint16_t get_sts_mnth(uint16_t sts, uint8_t default_threshold, uint8_t shift_val);
 
+extern dwOps_t dwt_ops;
 //DW-IC SPI CRC-8 polynomial
 #define POLYNOMIAL  0x07    /* x^8 + x^2 + x^1 + x^0 */
 #define TOPBIT      (1 << (8 - 1))
@@ -2723,7 +2724,7 @@ void  __dwt_otp_write_wdata_id_reg(int16_t val)
  */
 void _dwt_otpprogword32(uint32_t data, uint16_t address)
 {
-    uint32_t rd_buf;
+    // uint32_t rd_buf;
     uint16_t wr_buf[4];
     //uint8_t otp_done;
 
@@ -2798,19 +2799,19 @@ void _dwt_otpprogword32(uint32_t data, uint16_t address)
     Burn time is about 1.76ms
     */
 
-    uint16_t	i;
+    // uint16_t	i;
 
-    for (i = 0; i < 1000; i++)
-    {
-        rd_buf = dwt_read32bitoffsetreg(OTP_STATUS_ID, 0);
+    // for (i = 0; i < 1000; i++)
+    // {
+    //     rd_buf = dwt_read32bitoffsetreg(OTP_STATUS_ID, 0);
 
-        if (!(rd_buf & OTP_STATUS_OTP_PROG_DONE_BIT_MASK))
-        {
-            break;
-        }
-    }
+    //     if (!(rd_buf & OTP_STATUS_OTP_PROG_DONE_BIT_MASK))
+    //     {
+    //         break;
+    //     }
+    // }
 
-
+    dwt_ops.delayms(2);
     // deca_sleep(2);//Uncomment this command if you don't want to use the loop above. It will take more time than the loop above.
 
     // Stop prog mode
@@ -2919,6 +2920,7 @@ uint16_t dwt_calibratesleepcnt(void)
     dwt_aon_write(AON_SLPCNT_CAL_CTRL, 0x00);
     // Run cal
     dwt_aon_write(AON_SLPCNT_CAL_CTRL, 0x04);
+    dwt_ops.delayms(2);
     // deca_sleep(2); //need to wait for at least 1 LP OSC period at slowest frequency of 15kHz =~ 66 us
     // Read the Cal value from AON
     temp = dwt_aon_read(AON_SLPCNT_CAL_LO);
@@ -3250,6 +3252,7 @@ uint8_t dwt_checkirq(void)
  */
 uint8_t dwt_checkidlerc(void)
 {
+    dwt_ops.delayms(2);
     //deca_sleep(2); /* wait 2 ms for DW IC to get into IDLE_RC state */
     /* Poll DW IC until IDLE_RC event set. This means that DW IC is in IDLE_RC state and ready */
     uint32_t reg = ((uint32_t)dwt_read16bitoffsetreg(SYS_STATUS_ID, 2) << 16);
@@ -4020,6 +4023,7 @@ void dwt_softreset(void)
 
     //make sure the new AON array config has been set
     // deca_sleep(1);
+    dwt_ops.delayms(1);
 
     //need to make sure clock is not PLL as the PLL will be switched off as part of reset
     dwt_or8bitoffsetreg(CLK_CTRL_ID, 0, FORCE_SYSCLK_FOSC);
@@ -4030,7 +4034,7 @@ void dwt_softreset(void)
     // DW3000 needs a 10us sleep to let clk PLL lock after reset - the PLL will automatically lock after the reset
     // Could also have polled the PLL lock flag, but then the SPI needs to be <= 7MHz !! So a simple delay is easier
     // deca_sleep(1);
-
+    dwt_ops.delayms(1);
     //reset buffer to process RX_BUFFER_0 next - if in double buffer mode (clear bit 1 if set)
     pdw3000local->dblbuffon = DBL_BUFF_ACCESS_BUFFER_0;
     pdw3000local->sleep_mode = 0;
