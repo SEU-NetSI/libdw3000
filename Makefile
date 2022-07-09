@@ -1,6 +1,6 @@
 PROCESSOR=-mthumb -mcpu=cortex-m0 -DHSI48_VALUE="((uint32_t)48000000)" -DSTM32F072xB
 
-INCLUDES=-Iinclude -Isrc
+INCLUDES=-Iinclude
 
 OBJS+=src/libdw3000.o src/libdw3000Spi.o
 
