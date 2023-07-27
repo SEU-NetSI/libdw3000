@@ -1835,6 +1835,50 @@ void dwt_readrxdata(uint8_t *buffer, uint16_t length, uint16_t rxBufferOffset)
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
+ * @brief This is used to read the data from the RX buffer, from an offset location give by offset parameter
+ *
+ * input parameters
+ * @param buffer - the buffer into which the data will be read
+ * @param length - the length of data to read (in bytes)
+ * @param rxBufferOffset - the offset in the rx buffer from which to read the data
+ *
+ * output parameters
+ *
+ * no return value
+ */
+void dwt_readrxdata_dblbuff(uint8_t *buffer, uint16_t length, uint16_t rxBufferOffset)
+{
+    uint32_t  rx_buff_addr;
+
+    if (pdw3000local->dblbuffon == DBL_BUFF_ACCESS_BUFFER_1)  //if the flag is 0x3 we are reading from RX_BUFFER_1
+    {
+        rx_buff_addr=RX_BUFFER_0_ID;
+    }
+    else //reading from RX_BUFFER_0 - also when non-double buffer mode
+    {
+        rx_buff_addr=RX_BUFFER_1_ID;
+    }
+
+    if ((rxBufferOffset + length) <= RX_BUFFER_MAX_LEN)
+    {
+        if(rxBufferOffset <= REG_DIRECT_OFFSET_MAX_LEN)
+        {
+            /* Directly read data from the IC to the buffer */
+            dwt_readfromdevice(rx_buff_addr,rxBufferOffset,length,buffer);
+        }
+        else
+        {
+            /* Program the indirect offset registers B for specified offset to RX buffer */
+            dwt_write32bitreg(INDIRECT_ADDR_A_ID, (rx_buff_addr >> 16) );
+            dwt_write32bitreg(ADDR_OFFSET_A_ID,   rxBufferOffset);
+
+            /* Indirectly read data from the IC to the buffer */
+            dwt_readfromdevice(INDIRECT_POINTER_A_ID, 0, length, buffer);
+        }
+    }
+}
+
+/*! ------------------------------------------------------------------------------------------------------------------
  * @brief This is used to read the 18 bit data from the Accumulator buffer, from an offset location give by offset parameter
  *        for 18 bit complex samples, each sample is 6 bytes (3 real and 3 imaginary)
  *
@@ -2367,6 +2411,34 @@ void dwt_readrxtimestamp(uint8_t * timestamp)
         break;
     default:
         dwt_readfromdevice(RX_TIME_0_ID, 0, RX_TIME_RX_STAMP_LEN, timestamp); // Get the adjusted time of arrival
+        break;
+    }
+}
+
+
+/*! ------------------------------------------------------------------------------------------------------------------
+ * @brief This is used to read the RX timestamp in double buffer model from the other buffer (not the current buffer)
+ *
+ * input parameters
+ * @param timestamp - a pointer to a 5-byte buffer which will store the read RX timestamp time
+ *
+ * output parameters - the timestamp buffer will contain the value after the function call
+ *
+ * no return value, if this is called in non double buffer model, assert happens
+ */
+void dwt_readrxtimestamp_dblbuff(uint8_t * timestamp)
+{
+    switch (pdw3000local->dblbuffon)    //check if in double buffer mode and if so which buffer host is currently accessing
+    {
+    case DBL_BUFF_ACCESS_BUFFER_0: //always read the other buffer not the current accessing one
+        //!!! Assumes that Indirect pointer register B was already set. This is done in the dwt_setdblrxbuffmode when mode is enabled.
+        dwt_readfromdevice(INDIRECT_POINTER_B_ID, BUF1_RX_TIME -BUF1_RX_FINFO, RX_TIME_RX_STAMP_LEN, timestamp);
+        break;
+    case DBL_BUFF_ACCESS_BUFFER_1: //always read the other buffer not the current accessing one
+        dwt_readfromdevice(BUF0_RX_TIME, 0, RX_TIME_RX_STAMP_LEN, timestamp);
+        break;
+    default:
+        assert(pdw3000local->dblbuffon);
         break;
     }
 }
