@@ -4,8 +4,6 @@
 #include "libdw3000.h"
 #include "dwTypes.h"
 
-extern dwOps_t dwt_ops;
-
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: writetospiwithcrc()
  *
@@ -15,7 +13,7 @@ extern dwOps_t dwt_ops;
  */
 int writetospiwithcrc(uint16_t headerLength, const uint8_t *headerBuffer, uint16_t bodyLength,
                       const uint8_t *bodyBuffer, uint8_t crc8)
-{   
+{
     // TODO crc implementation
     dwt_ops.spiWrite(headerBuffer, headerLength, bodyBuffer, bodyLength);
     return 0;
