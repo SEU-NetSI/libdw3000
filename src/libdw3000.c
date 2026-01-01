@@ -3432,7 +3432,7 @@ void dwt_isr(void)
             pdw3000local->cbSPIRdy(&pdw3000local->cbData);
         }
         // Clear SPI RDY events after the callback - this lets the host read the SYS_STATUS register inside the callback
-        dwt_write16bitoffsetreg(SYS_STATUS_ID, 2, (uint16_t)((SYS_STATUS_RCINIT_BIT_MASK | SYS_STATUS_SPIRDY_BIT_MASK) >> 16)); // Clear the bit to clear the interrupt
+        // dwt_write16bitoffsetreg(SYS_STATUS_ID, 2, (uint16_t)((SYS_STATUS_RCINIT_BIT_MASK | SYS_STATUS_SPIRDY_BIT_MASK) >> 16)); // Clear the bit to clear the interrupt
 
         //VTDET, GPIO, not handled here ...
     }
