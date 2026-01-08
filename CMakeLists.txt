@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(libdw3000 LANGUAGES C)
 
-add_library(libdw3000 STATIC)
+add_library(libdw3000 OBJECT)
 
 target_sources(libdw3000
     PRIVATE
